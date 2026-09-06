@@ -1,0 +1,83 @@
+[project]
+name = "autonomous-research-system"
+version = "1.0.0"
+description = "Autonomous multi-agent research: search, verify, debate, cite."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "Md Zulkar Nine" }]
+dependencies = [
+    "fastapi==0.115.6",
+    "uvicorn[standard]==0.34.0",
+    "pydantic==2.10.4",
+    "pydantic-settings==2.7.0",
+    "email-validator==2.2.0",
+    "SQLAlchemy==2.0.36",
+    "aiosqlite==0.20.0",
+    "asyncpg==0.30.0",
+    "httpx==0.28.1",
+    "PyJWT==2.10.1",
+    "argon2-cffi==23.1.0",
+    "python-json-logger==3.2.1",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest==8.3.4",
+    "pytest-asyncio==0.25.0",
+    "pytest-cov==6.0.0",
+    "ruff==0.8.4",
+    "mypy==1.14.0",
+    "bandit[toml]==1.8.0",
+    "pip-audit==2.7.3",
+    "types-python-jose",
+]
+
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+package-dir = { "" = "backend" }
+
+[tool.setuptools.packages.find]
+where = ["backend"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+src = ["backend", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "N", "UP", "B", "C4", "SIM", "S", "ASYNC", "RUF"]
+ignore = ["S101", "B008", "RUF012"]
+
+[tool.ruff.lint.per-file-ignores]
+# S105/S107 fire on the literal "access"/"bearer" token-kind strings, which are
+# scheme identifiers rather than credentials.
+"tests/*" = ["S105", "S106", "S311"]
+"backend/app/security/tokens.py" = ["S105", "S107"]
+"backend/app/schemas.py" = ["S105"]
+
+[tool.mypy]
+python_version = "3.11"
+mypy_path = "backend"
+warn_unused_configs = true
+warn_redundant_casts = true
+warn_unused_ignores = false
+disallow_untyped_defs = false
+no_implicit_optional = true
+ignore_missing_imports = true
+plugins = []
+
+[tool.bandit]
+exclude_dirs = ["tests", ".venv", "frontend"]
+skips = ["B101"]
+
+[tool.coverage.run]
+source = ["backend/app"]
+omit = ["*/tests/*"]
+
+[tool.coverage.report]
+fail_under = 75
+show_missing = true

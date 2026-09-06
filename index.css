@@ -1,0 +1,102 @@
+/* Design tokens. The palette encodes verification state: green means the
+   evidence held, amber means it is contested, red means it was refuted. */
+:root {
+  --ink: #10131c;
+  --panel: #171c28;
+  --panel-2: #1d2331;
+  --rule: #2b3345;
+  --vellum: #ece7dc;
+  --muted: #9aa3b4;
+  --verify: #6fb79a;
+  --contest: #d9a441;
+  --refute: #c4685f;
+  --focus: #8fb8ff;
+  --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Charter, Georgia, serif;
+  --sans: ui-sans-serif, system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --step-0: 0.95rem;
+  --step-1: 1.19rem;
+  --step-2: 1.48rem;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--ink);
+  color: var(--vellum);
+  font-family: var(--sans);
+  font-size: var(--step-0);
+  line-height: 1.55;
+}
+
+a { color: var(--focus); }
+
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+.masthead {
+  display: flex;
+  align-items: baseline;
+  gap: 1rem;
+  padding: 1.1rem 1.4rem;
+  border-bottom: 1px solid var(--rule);
+}
+.masthead h1 { font-family: var(--serif); font-size: var(--step-2); font-weight: 600; margin: 0; }
+.masthead .identity { margin-left: auto; color: var(--muted); font-size: 0.85rem; }
+
+.docket { display: grid; grid-template-columns: minmax(260px, 21rem) 1fr; min-height: calc(100vh - 61px); }
+@media (max-width: 900px) { .docket { grid-template-columns: 1fr; } }
+
+.rail { border-right: 1px solid var(--rule); background: var(--panel); padding: 1.2rem; overflow-y: auto; max-height: calc(100vh - 61px); }
+.stage { padding: 1.4rem; }
+
+h2 { font-family: var(--serif); font-size: var(--step-1); font-weight: 600; margin: 0 0 0.8rem; }
+h3 { font-size: var(--step-0); font-weight: 600; margin: 1.4rem 0 0.5rem; color: var(--muted); }
+p.hint { color: var(--muted); }
+
+label { display: block; font-size: 0.82rem; color: var(--muted); margin-bottom: 0.3rem; }
+input, textarea, select {
+  width: 100%; padding: 0.6rem 0.7rem; margin-bottom: 0.85rem;
+  background: var(--panel-2); color: var(--vellum);
+  border: 1px solid var(--rule); border-radius: 3px; font: inherit;
+}
+textarea { resize: vertical; }
+
+button {
+  font: inherit; padding: 0.55rem 1.05rem; border-radius: 3px; cursor: pointer;
+  background: var(--vellum); color: var(--ink); border: 1px solid var(--vellum);
+}
+button.ghost { background: transparent; color: var(--vellum); border-color: var(--rule); }
+button:disabled { opacity: 0.45; cursor: not-allowed; }
+.actions { display: flex; gap: 0.6rem; flex-wrap: wrap; align-items: center; }
+
+.notice { border-left: 2px solid var(--refute); background: #251a1c; color: #f0d4d0; padding: 0.5rem 0.75rem; margin: 0 0 0.9rem; }
+
+.trace-line { display: grid; grid-template-columns: 6.2rem 1fr; gap: 0.6rem; padding: 0.42rem 0; border-bottom: 1px solid var(--rule); font-size: 0.86rem; }
+.trace-line .agent { color: var(--muted); }
+.trace-line[data-level="warn"] .agent { color: var(--contest); }
+.trace-line[data-level="error"] .agent { color: var(--refute); }
+
+.readout { display: flex; gap: 1.6rem; flex-wrap: wrap; margin: 0.4rem 0 1.2rem; color: var(--muted); font-size: 0.82rem; }
+.readout b { display: block; font-family: var(--serif); font-size: var(--step-2); font-weight: 600; color: var(--vellum); }
+
+table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+th, td { text-align: left; padding: 0.5rem 0.6rem 0.5rem 0; border-bottom: 1px solid var(--rule); vertical-align: top; }
+th { color: var(--muted); font-weight: 500; }
+td.state { white-space: nowrap; }
+
+.track { width: 5rem; height: 4px; background: var(--rule); border-radius: 2px; margin-bottom: 0.25rem; }
+.fill { height: 4px; border-radius: 2px; transition: width 400ms ease; background: var(--muted); }
+.supported .fill { background: var(--verify); }
+.uncertain .fill { background: var(--contest); }
+.refuted .fill { background: var(--refute); }
+
+.report { font-family: var(--serif); font-size: 1.02rem; line-height: 1.62; max-width: 68ch; }
+.report h1, .report h2, .report h3 { font-family: var(--serif); }
+.report code { font-family: ui-monospace, monospace; font-size: 0.9em; }
+
+.history { list-style: none; margin: 0; padding: 0; }
+.history li { border-bottom: 1px solid var(--rule); padding: 0.55rem 0; display: flex; gap: 0.7rem; align-items: baseline; }
+.history button { background: none; border: 0; color: var(--vellum); padding: 0; text-align: left; cursor: pointer; }
+.history .state { font-size: 0.78rem; color: var(--muted); margin-left: auto; }
+
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
