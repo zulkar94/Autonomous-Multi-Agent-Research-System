@@ -139,7 +139,7 @@ jobs:
           echo "container never became healthy"; docker logs ars; docker rm -f ars; exit 1
 
       - name: Scan image for vulnerabilities
-        uses: aquasecurity/trivy-action@0.28.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: ars:ci
           format: table
