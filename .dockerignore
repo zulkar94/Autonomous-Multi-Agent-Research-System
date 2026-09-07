@@ -1,0 +1,16 @@
+**/__pycache__/
+**/*.pyc
+.git/
+.github/
+.venv/
+data/
+docs/
+frontend/node_modules/
+frontend/dist/
+htmlcov/
+.coverage
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+*.db
+.env

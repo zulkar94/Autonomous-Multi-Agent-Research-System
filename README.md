@@ -4,7 +4,7 @@ Six agents plan, search, extract, verify, debate and write. The output is a Mark
 
 The whole pipeline runs offline with no API keys, because the default LLM and search providers are deterministic mocks. Swap two environment variables to run it against Claude and a real search backend.
 
-[![CI](https://github.com/OWNER/REPO/actions/workflows/ci.yml/badge.svg)](https://github.com/OWNER/REPO/actions/workflows/ci.yml)
+[![CI](https://github.com/zulkar94/Autonomous-Multi-Agent-Research-System/actions/workflows/ci.yml/badge.svg)](https://github.com/zulkar94/Autonomous-Multi-Agent-Research-System/actions/workflows/ci.yml)
 ![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue)
 ![License MIT](https://img.shields.io/badge/license-MIT-green)
 
@@ -30,7 +30,7 @@ Live agent traces stream to the browser over SSE. Every event is also persisted,
 ## Quick start
 
 ```bash
-git clone https://github.com/OWNER/REPO.git && cd REPO
+git clone https://github.com/zulkar94/Autonomous-Multi-Agent-Research-System.git && cd REPO
 ./scripts/dev.sh                 # installs deps, generates SECRET_KEY, starts the API
 ```
 

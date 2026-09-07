@@ -1,0 +1,333 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Research console</title>
+<style>
+  :root {
+    --ink: #10131c;
+    --panel: #171c28;
+    --panel-2: #1d2331;
+    --rule: #2b3345;
+    --vellum: #ece7dc;
+    --muted: #9aa3b4;
+    --verify: #6fb79a;
+    --contest: #d9a441;
+    --refute: #c4685f;
+    --focus: #8fb8ff;
+    --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Charter, Georgia, serif;
+    --sans: ui-sans-serif, system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--ink); color: var(--vellum);
+    font-family: var(--sans); font-size: 15px; line-height: 1.55;
+  }
+  a { color: var(--focus); }
+  header.bar {
+    display: flex; align-items: baseline; gap: 1rem; flex-wrap: wrap;
+    padding: 1.1rem 1.4rem; border-bottom: 1px solid var(--rule);
+  }
+  header.bar h1 { font-family: var(--serif); font-size: 1.35rem; font-weight: 600; margin: 0; }
+  header.bar .who { margin-left: auto; color: var(--muted); font-size: 0.85rem; }
+  main { display: grid; grid-template-columns: minmax(280px, 22rem) 1fr; min-height: calc(100vh - 60px); }
+  @media (max-width: 860px) { main { grid-template-columns: 1fr; } }
+  section { padding: 1.4rem; }
+  #trace { border-right: 1px solid var(--rule); background: var(--panel); overflow-y: auto; max-height: calc(100vh - 60px); }
+  h2 { font-family: var(--serif); font-size: 1.05rem; font-weight: 600; margin: 0 0 0.9rem; }
+  label { display: block; font-size: 0.82rem; color: var(--muted); margin-bottom: 0.3rem; }
+  input, textarea, select {
+    width: 100%; padding: 0.6rem 0.7rem; background: var(--panel-2); color: var(--vellum);
+    border: 1px solid var(--rule); border-radius: 3px; font: inherit; margin-bottom: 0.8rem;
+  }
+  input:focus-visible, textarea:focus-visible, button:focus-visible, select:focus-visible {
+    outline: 2px solid var(--focus); outline-offset: 2px;
+  }
+  button {
+    font: inherit; padding: 0.55rem 1rem; border-radius: 3px; cursor: pointer;
+    background: var(--vellum); color: var(--ink); border: 1px solid var(--vellum);
+  }
+  button.ghost { background: transparent; color: var(--vellum); border-color: var(--rule); }
+  button[disabled] { opacity: 0.45; cursor: not-allowed; }
+  .row { display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap; }
+  .notice { border-left: 2px solid var(--refute); padding: 0.5rem 0.75rem; margin: 0.7rem 0; color: #f0d4d0; background: #251a1c; }
+  .event { display: grid; grid-template-columns: 6.5rem 1fr; gap: 0.6rem; padding: 0.4rem 0; border-bottom: 1px solid var(--rule); font-size: 0.87rem; }
+  .event .agent { color: var(--muted); font-variant-numeric: tabular-nums; }
+  .event[data-level="warn"] .agent { color: var(--contest); }
+  .event[data-level="error"] .agent { color: var(--refute); }
+  .stat { display: flex; gap: 1.4rem; flex-wrap: wrap; margin-bottom: 1rem; color: var(--muted); font-size: 0.85rem; }
+  .stat b { display: block; color: var(--vellum); font-size: 1.35rem; font-family: var(--serif); font-weight: 600; }
+  table { width: 100%; border-collapse: collapse; margin: 0.6rem 0 1.6rem; font-size: 0.88rem; }
+  th, td { text-align: left; padding: 0.5rem 0.5rem 0.5rem 0; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  th { color: var(--muted); font-weight: 500; }
+  .bar-track { width: 5rem; height: 4px; background: var(--rule); border-radius: 2px; }
+  .bar-fill { height: 4px; border-radius: 2px; transition: width 400ms ease; }
+  .supported .bar-fill { background: var(--verify); }
+  .uncertain .bar-fill { background: var(--contest); }
+  .refuted .bar-fill { background: var(--refute); }
+  article.report { font-family: var(--serif); font-size: 1.02rem; max-width: 68ch; white-space: pre-wrap; }
+  .runs li { list-style: none; border-bottom: 1px solid var(--rule); padding: 0.5rem 0; cursor: pointer; }
+  .runs { padding: 0; margin: 0; }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+<header class="bar">
+  <h1>Research console</h1>
+  <span class="who" id="who">not signed in</span>
+</header>
+
+<main>
+  <section id="trace" aria-live="polite">
+    <h2>Agent trace</h2>
+    <div id="events"><p style="color:var(--muted)">Start a run to watch the agents work.</p></div>
+  </section>
+
+  <section>
+    <div id="auth">
+      <h2>Sign in</h2>
+      <div id="authError"></div>
+      <label for="email">Email</label>
+      <input id="email" type="email" autocomplete="username" />
+      <label for="password">Password (12+ characters)</label>
+      <input id="password" type="password" autocomplete="current-password" />
+      <div class="row">
+        <button id="login">Sign in</button>
+        <button id="register" class="ghost">Create account</button>
+      </div>
+    </div>
+
+    <div id="workspace" hidden>
+      <h2>Ask a research question</h2>
+      <div id="runError"></div>
+      <label for="query">Question</label>
+      <textarea id="query" rows="3" placeholder="Does structured code review reduce production defects?"></textarea>
+      <label for="depth">Depth (more depth means more debate rounds)</label>
+      <select id="depth">
+        <option value="1">1 — quick scan</option>
+        <option value="2" selected>2 — standard</option>
+        <option value="3">3 — thorough</option>
+      </select>
+      <div class="row">
+        <button id="start">Start research</button>
+        <button id="cancel" class="ghost" disabled>Cancel run</button>
+        <button id="signout" class="ghost">Sign out</button>
+      </div>
+
+      <div id="result" hidden>
+        <div class="stat">
+          <div><b id="statConfidence">—</b>confidence</div>
+          <div><b id="statCoverage">—</b>citation coverage</div>
+          <div><b id="statSources">—</b>sources</div>
+          <div><b id="statClaims">—</b>claims</div>
+        </div>
+        <h2>Claims</h2>
+        <table><thead><tr><th>Claim</th><th>Refs</th><th>Support</th></tr></thead>
+          <tbody id="claims"></tbody></table>
+        <h2>Report</h2>
+        <article class="report" id="report"></article>
+      </div>
+
+      <h2>Recent runs</h2>
+      <ul class="runs" id="runs"></ul>
+    </div>
+  </section>
+</main>
+
+<script>
+"use strict";
+const API = "/api/v1";
+let access = sessionStorage.getItem("access") || null;
+let refresh = sessionStorage.getItem("refresh") || null;
+let currentRun = null;
+let stream = null;
+
+const $ = (id) => document.getElementById(id);
+const text = (value) => document.createTextNode(String(value));
+
+function fail(target, message) {
+  const box = $(target);
+  box.innerHTML = "";
+  if (!message) return;
+  const div = document.createElement("div");
+  div.className = "notice";
+  div.appendChild(text(message));
+  box.appendChild(div);
+}
+
+async function api(path, options = {}) {
+  const headers = Object.assign({ "Content-Type": "application/json" }, options.headers || {});
+  if (access) headers.Authorization = "Bearer " + access;
+  const response = await fetch(API + path, Object.assign({}, options, { headers }));
+  if (response.status === 401 && refresh && !options._retried) {
+    if (await renew()) return api(path, Object.assign({}, options, { _retried: true }));
+    signOut();
+  }
+  if (!response.ok) {
+    let detail = response.statusText;
+    try { detail = (await response.json()).error || detail; } catch (_) {}
+    throw new Error(detail);
+  }
+  return response.status === 204 ? null : response.json();
+}
+
+async function renew() {
+  try {
+    const response = await fetch(API + "/auth/refresh", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ refresh_token: refresh }),
+    });
+    if (!response.ok) return false;
+    setTokens(await response.json());
+    return true;
+  } catch (_) { return false; }
+}
+
+function setTokens(tokens) {
+  access = tokens.access_token; refresh = tokens.refresh_token;
+  sessionStorage.setItem("access", access);
+  sessionStorage.setItem("refresh", refresh);
+}
+
+function signOut() {
+  access = refresh = null;
+  sessionStorage.clear();
+  if (stream) stream.close();
+  $("auth").hidden = false;
+  $("workspace").hidden = true;
+  $("who").textContent = "not signed in";
+}
+
+async function signedIn() {
+  const me = await api("/auth/me");
+  $("who").textContent = me.email + " (" + me.role + ")";
+  $("auth").hidden = true;
+  $("workspace").hidden = false;
+  await loadRuns();
+}
+
+$("login").onclick = async () => {
+  fail("authError", null);
+  try {
+    setTokens(await api("/auth/login", {
+      method: "POST",
+      body: JSON.stringify({ email: $("email").value, password: $("password").value }),
+    }));
+    await signedIn();
+  } catch (error) { fail("authError", error.message); }
+};
+
+$("register").onclick = async () => {
+  fail("authError", null);
+  try {
+    await api("/auth/register", {
+      method: "POST",
+      body: JSON.stringify({ email: $("email").value, password: $("password").value }),
+    });
+    $("login").click();
+  } catch (error) { fail("authError", error.message); }
+};
+
+$("signout").onclick = signOut;
+
+$("start").onclick = async () => {
+  fail("runError", null);
+  $("events").innerHTML = "";
+  $("result").hidden = true;
+  try {
+    const run = await api("/research/runs", {
+      method: "POST",
+      body: JSON.stringify({ query: $("query").value, depth: Number($("depth").value) }),
+    });
+    currentRun = run.id;
+    $("cancel").disabled = false;
+    await watch(run.id);
+  } catch (error) { fail("runError", error.message); }
+};
+
+$("cancel").onclick = async () => {
+  if (!currentRun) return;
+  try { await api("/research/runs/" + currentRun + "/cancel", { method: "POST" }); }
+  catch (error) { fail("runError", error.message); }
+};
+
+function addEvent(event) {
+  const row = document.createElement("div");
+  row.className = "event";
+  row.dataset.level = event.level || "info";
+  const agent = document.createElement("span");
+  agent.className = "agent";
+  agent.appendChild(text(event.agent || ""));
+  const message = document.createElement("span");
+  message.appendChild(text(event.message || ""));
+  row.append(agent, message);
+  $("events").appendChild(row);
+  $("trace").scrollTop = $("trace").scrollHeight;
+}
+
+async function watch(runId) {
+  const { ticket } = await api("/research/runs/" + runId + "/stream-ticket", { method: "POST" });
+  if (stream) stream.close();
+  stream = new EventSource(
+    API + "/research/runs/" + runId + "/events?ticket=" + encodeURIComponent(ticket)
+  );
+  stream.onmessage = (message) => addEvent(JSON.parse(message.data));
+  stream.addEventListener("end", async () => {
+    stream.close();
+    $("cancel").disabled = true;
+    await showRun(runId);
+    await loadRuns();
+  });
+  stream.onerror = () => { stream.close(); $("cancel").disabled = true; };
+}
+
+async function showRun(runId) {
+  const run = await api("/research/runs/" + runId);
+  $("result").hidden = false;
+  $("statConfidence").textContent = Math.round(run.confidence * 100) + "%";
+  $("statCoverage").textContent = Math.round(run.citation_coverage * 100) + "%";
+  $("statSources").textContent = run.sources.length;
+  $("statClaims").textContent = run.claims.length;
+
+  const body = $("claims");
+  body.innerHTML = "";
+  run.claims.forEach((claim) => {
+    const tr = document.createElement("tr");
+    tr.className = claim.status;
+    const claimCell = document.createElement("td");
+    claimCell.appendChild(text(claim.text));
+    const refCell = document.createElement("td");
+    refCell.appendChild(text(claim.source_refs));
+    const supportCell = document.createElement("td");
+    const track = document.createElement("div");
+    track.className = "bar-track";
+    const fillBar = document.createElement("div");
+    fillBar.className = "bar-fill";
+    fillBar.style.width = Math.round(claim.support * 100) + "%";
+    track.appendChild(fillBar);
+    supportCell.append(track, text(claim.status + " " + claim.support.toFixed(2)));
+    tr.append(claimCell, refCell, supportCell);
+    body.appendChild(tr);
+  });
+
+  $("report").textContent = run.report_markdown || run.error || "No report was produced.";
+}
+
+async function loadRuns() {
+  const runs = await api("/research/runs?limit=10");
+  const list = $("runs");
+  list.innerHTML = "";
+  runs.forEach((run) => {
+    const item = document.createElement("li");
+    item.appendChild(text(run.query.slice(0, 90) + " — " + run.status));
+    item.onclick = () => showRun(run.id);
+    list.appendChild(item);
+  });
+}
+
+if (access) signedIn().catch(signOut);
+</script>
+</body>
+</html>
