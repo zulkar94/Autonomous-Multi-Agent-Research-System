@@ -9,7 +9,7 @@ COPY frontend/ ./
 RUN npm run build
 
 # ---------- stage 2: python dependencies ----------
-FROM python:3.12-slim AS deps
+FROM python:3.14-slim AS deps
 ENV PIP_NO_CACHE_DIR=1 PIP_DISABLE_PIP_VERSION_CHECK=1
 WORKDIR /wheels
 RUN apt-get update && apt-get install --no-install-recommends -y build-essential \
@@ -18,7 +18,7 @@ COPY requirements.txt .
 RUN pip wheel --wheel-dir /wheels -r requirements.txt
 
 # ---------- stage 3: runtime ----------
-FROM python:3.12-slim AS runtime
+FROM python:3.14-slim AS runtime
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     PIP_NO_CACHE_DIR=1 \
