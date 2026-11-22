@@ -48,7 +48,7 @@ def _resolve(host: str) -> list[str]:
         infos = socket.getaddrinfo(host, None, proto=socket.IPPROTO_TCP)
     except socket.gaierror as exc:
         raise SSRFError(f"cannot resolve host: {host}") from exc
-    return sorted({info[4][0] for info in infos})
+    return sorted({str(info[4][0]) for info in infos})
 
 
 def validate_url(raw_url: str) -> ValidatedURL:
