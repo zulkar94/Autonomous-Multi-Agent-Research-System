@@ -63,6 +63,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0 # gitleaks scans the PR commit range
       - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
@@ -139,7 +141,7 @@ jobs:
           echo "container never became healthy"; docker logs ars; docker rm -f ars; exit 1
 
       - name: Scan image for vulnerabilities
-        uses: aquasecurity/trivy-action@0.36.0
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
           image-ref: ars:ci
           format: table
