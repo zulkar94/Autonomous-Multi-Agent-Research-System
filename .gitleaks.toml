@@ -1,0 +1,7 @@
+# Extend the default ruleset; allow the documented test-only CI signing key.
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Test-only SECRET_KEY set in the CI workflow env"
+regexes = ['''ci-secret-key-long-enough-for-hs256-signing''']
