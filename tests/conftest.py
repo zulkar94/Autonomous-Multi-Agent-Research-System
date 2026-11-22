@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import os
 import sys
+import tempfile
 from collections.abc import AsyncIterator
 from pathlib import Path
 
@@ -15,7 +16,10 @@ sys.path.insert(0, str(ROOT / "backend"))
 os.environ.update(
     APP_ENV="test",
     SECRET_KEY="test-secret-key-that-is-long-enough-for-hs256-usage",
-    DATABASE_URL="sqlite+aiosqlite:///:memory:",
+    # A file DB gives every session its own connection. With :memory: + StaticPool all
+    # sessions share one connection, so a request rolling back on an error response
+    # could roll back a background run's writes and leave it stuck in "running".
+    DATABASE_URL=f"sqlite+aiosqlite:///{tempfile.mkdtemp(prefix='ars-test-')}/test.db",
     LLM_PROVIDER="mock",
     SEARCH_PROVIDER="mock",
     RATE_LIMIT_ENABLED="true",
